@@ -325,6 +325,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   z-index: 1;
 }
 
+/* Coachmark ring — pulses the Practice button on reel 2 for paid, not-yet-
+   activated users to drive their first practice. Expanding halo + gentle scale. */
+@keyframes practiceCoachmarkRing {
+  0%   { box-shadow: 0 0 0 0 hsl(258 90% 66% / 0.55); }
+  70%  { box-shadow: 0 0 0 14px hsl(258 90% 66% / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(258 90% 66% / 0); }
+}
+.practice-coachmark {
+  animation: practiceCoachmarkRing 1.6s ease-out infinite, practicePulse 1.6s ease-in-out infinite;
+}
+
+/* Side coachmark: the pointing-finger pill sits to the right of the Practice
+   button and bobs left toward it to draw the eye. */
+@keyframes coachmarkBobX {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(-6px); }
+}
+.coachmark-bob-x {
+  animation: coachmarkBobX 1s ease-in-out infinite;
+}
+
 @layer utilities {
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;

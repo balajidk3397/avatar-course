@@ -7,17 +7,26 @@ import {
   emitNavigationOpen,
   getBridge,
 } from "@/lib/bridge";
-import { track } from "@/lib/analytics";
+import { track, hasEnteredPractice } from "@/lib/analytics";
 
 const DEV_PAID_KEY = "sn_dev_is_paid";
 // Set when we redirect to /premium so we know to refresh on return.
 // sessionStorage survives the host-driven navigation but is cleared on tab close.
 const AWAIT_RETURN_KEY = "sn_await_premium_return";
+// Local mirror of the paid "first-practice activation" flag. Lets the feed unlock
+// instantly (no KV round-trip) when a paid user taps Practice, and avoids a gate
+// flash for returning activated users. KV (`practice_started`) is the source of
+// truth — clearing this local flag just triggers a re-confirm against KV.
+const PAID_ACTIVATED_KEY = "pr_paid_activated";
 
 type UserContextValue = {
   ready: boolean;
   isNative: boolean;
   hasActiveSubscription: boolean;
+  // Paid-only: has this user entered the practice page at least once?
+  practiceActivated: boolean;
+  // Call the instant a paid user taps Practice (persists locally + flips state).
+  markPracticeEntered: () => void;
   user: BridgeUser;
   auth: BridgeContext["auth"];
   redirectToPremium: () => void;
@@ -94,6 +103,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return false;
   })();
 
+  // Read the local mirror synchronously on first render so a returning activated
+  // user never flashes the locked state.
+  const [practiceActivated, setPracticeActivated] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem(PAID_ACTIVATED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const markPracticeEntered = useCallback(() => {
+    try {
+      localStorage.setItem(PAID_ACTIVATED_KEY, "1");
+    } catch {
+      // ignore — private mode / quota; KV (practice_started) remains the truth.
+    }
+    setPracticeActivated(true);
+  }, []);
+
+  // Confirm activation from KV for paid users who aren't already locally marked —
+  // handles cleared local storage / a fresh device where they DID practice before.
+  // null/false => keep the gate up (never falsely unlock).
+  useEffect(() => {
+    if (!ready || !hasActiveSubscription || practiceActivated) return;
+    let cancelled = false;
+    void hasEnteredPractice().then((entered) => {
+      if (cancelled || entered !== true) return;
+      try {
+        localStorage.setItem(PAID_ACTIVATED_KEY, "1");
+      } catch {
+        // ignore
+      }
+      setPracticeActivated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, hasActiveSubscription, practiceActivated]);
+
   const redirectToPremium = useCallback(() => {
     try {
       sessionStorage.setItem(AWAIT_RETURN_KEY, "1");
@@ -108,6 +157,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     ready,
     isNative,
     hasActiveSubscription,
+    practiceActivated,
+    markPracticeEntered,
     user: ctx?.user ?? null,
     auth: ctx?.auth,
     redirectToPremium,

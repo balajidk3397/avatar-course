@@ -256,6 +256,30 @@ function buildAuthHeaders(ctx: BridgeContext): Record<string, string> | null {
   return headers;
 }
 
+// Paid first-practice activation signal. `practice_started` only ever increments
+// when a user reaches the practice page (app/practice mount) — and only paid users
+// can, since free users are redirected to /premium before navigating. So
+// `practice_started >= 1` is a clean "this paid user has activated" flag.
+//
+// Returns true if activated, false if not, null if unknown (no bridge/auth or a
+// transient GET error). Callers MUST treat null as "not activated" so a failed
+// read never falsely unlocks the gate.
+export async function hasEnteredPractice(): Promise<boolean | null> {
+  const ctx = readBridgeContext();
+  if (!ctx) return null;
+  const headers = buildAuthHeaders(ctx);
+  if (!headers) return null;
+  try {
+    const blob = cachedBlob ?? (await fetchBlob(headers));
+    // Prime the session cache so the next flush stays PUT-only (no extra GET).
+    if (blob && cachedBlob === null) cachedBlob = blob;
+    return (blob?.counters.practice_started ?? 0) >= 1;
+  } catch (e) {
+    console.warn("[analytics] hasEnteredPractice read failed — keeping gate up", e);
+    return null;
+  }
+}
+
 export async function flush(): Promise<void> {
   if (flushing) return;
   if (queue.length === 0) return;
