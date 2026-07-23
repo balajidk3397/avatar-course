@@ -6,6 +6,7 @@ const CARTESIA_API_VERSION = "2024-06-10";
 
 const BodySchema = z.object({
   text: z.string().min(1).max(500),
+  voiceId: z.string().min(1).optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,9 +27,10 @@ export async function POST(request: Request) {
     return new Response("Bad request", { status: 400 });
   }
 
-  const { text } = parsed.data;
+  const { text, voiceId } = parsed.data;
+  const resolvedVoiceId = voiceId ?? CARTESIA_VOICE_ID;
   console.log("[tts-api] text:", `"${text.slice(0, 80)}${text.length > 80 ? "…" : ""}"`);
-  console.log("[tts-api] calling Cartesia (voice:", CARTESIA_VOICE_ID, ")…");
+  console.log("[tts-api] calling Cartesia (voice:", resolvedVoiceId, ")…");
 
   try {
     const res = await fetch("https://api.cartesia.ai/tts/bytes", {
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model_id: "sonic-english",
         transcript: text,
-        voice: { mode: "id", id: CARTESIA_VOICE_ID },
+        voice: { mode: "id", id: resolvedVoiceId },
         output_format: { container: "mp3", encoding: "mp3", sample_rate: 44100 },
       }),
     });
