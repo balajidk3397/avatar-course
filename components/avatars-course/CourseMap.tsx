@@ -25,7 +25,7 @@ export function CourseMap({ lessons, results, onSelect }: CourseMapProps) {
   const sorted = [...lessons].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="flex flex-col-reverse gap-6 px-4 pb-10">
+    <div className="flex flex-col gap-6 px-4 pb-10">
       {sorted.map((lesson, i) => {
         const result = results[lesson.scenarioId];
         let state: NodeState;
@@ -46,6 +46,7 @@ export function CourseMap({ lessons, results, onSelect }: CourseMapProps) {
             state={state}
             stars={(result?.stars ?? 0) as 0 | 1 | 2 | 3}
             align={ALIGN_CYCLE[i % ALIGN_CYCLE.length]}
+            characterId={lesson.characterId}
             onPress={() => {
               if (state === "unlocked" || state === "completed") onSelect(lesson);
             }}
