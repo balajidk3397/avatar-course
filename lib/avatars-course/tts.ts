@@ -8,6 +8,7 @@ const pending = new Map<string, Promise<string>>();
 let currentAudio: HTMLAudioElement | null = null;
 let currentPlayPromise: Promise<void> | null = null;
 let speakGeneration = 0;
+let currentOnSpeakingChange: ((speaking: boolean) => void) | null = null;
 
 function cacheKey(text: string, voiceId?: string): string {
   return `${voiceId ?? "default"}::${text}`;
@@ -41,14 +42,20 @@ async function fetchBlobUrl(text: string, voiceId?: string): Promise<string> {
   return promise;
 }
 
-export async function speakAs(text: string, voiceId?: string): Promise<void> {
+export async function speakAs(
+  text: string,
+  voiceId?: string,
+  onSpeakingChange?: (speaking: boolean) => void
+): Promise<void> {
   if (typeof window === "undefined") return;
 
   const gen = ++speakGeneration;
 
+  currentOnSpeakingChange?.(false);
   currentAudio?.pause();
   currentAudio = null;
   currentPlayPromise = null;
+  currentOnSpeakingChange = onSpeakingChange ?? null;
 
   const key = cacheKey(text, voiceId);
   let url: string;
@@ -65,12 +72,20 @@ export async function speakAs(text: string, voiceId?: string): Promise<void> {
     const audio = new Audio(url);
     currentAudio = audio;
 
+    // "playing" fires when audio actually starts producing sound, unlike play()'s
+    // promise which resolves once playback is requested but may still be buffering —
+    // this is what keeps the character's mouth animation in sync with audible speech.
+    audio.onplaying = () => {
+      onSpeakingChange?.(true);
+    };
     audio.onended = () => {
+      onSpeakingChange?.(false);
       currentPlayPromise = null;
       resolve();
     };
     audio.onerror = (e) => {
       console.error("[avatars-course/tts] playback error", e);
+      onSpeakingChange?.(false);
       currentPlayPromise = null;
       resolve();
     };
@@ -79,6 +94,7 @@ export async function speakAs(text: string, voiceId?: string): Promise<void> {
       if ((e as DOMException).name !== "AbortError") {
         console.error("[avatars-course/tts] play() rejected", e);
       }
+      onSpeakingChange?.(false);
       currentPlayPromise = null;
       resolve();
     });
@@ -93,4 +109,6 @@ export async function stopSpeakingAs() {
   }
   currentAudio?.pause();
   currentAudio = null;
+  currentOnSpeakingChange?.(false);
+  currentOnSpeakingChange = null;
 }

@@ -181,6 +181,7 @@ export default function AvatarsCourseLessonPage() {
 
   const recorderRef = useRef<Recorder | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const submittedRef = useRef(false);
 
   const cleanupRecorder = useCallback(() => {
@@ -209,7 +210,7 @@ export default function AvatarsCourseLessonPage() {
   useEffect(() => {
     if (state.stage !== "character-speaking" || !state.currentLine) return;
     let cancelled = false;
-    speakAs(state.currentLine, riveConfig?.voiceId).then(() => {
+    speakAs(state.currentLine, riveConfig?.voiceId, setAudioPlaying).then(() => {
       if (!cancelled) dispatch({ type: "STAGE", stage: "listening" });
     });
     return () => {
@@ -343,7 +344,7 @@ export default function AvatarsCourseLessonPage() {
     );
   }
 
-  const isSpeaking = state.stage === "character-speaking";
+  const isSpeaking = audioPlaying;
   const isListening = state.stage === "listening" || state.stage === "recording";
   const turnLabel =
     state.stage === "transcribing" ? "Listening…" : state.stage === "evaluating" ? "Thinking…" : lesson.title;
@@ -355,12 +356,13 @@ export default function AvatarsCourseLessonPage() {
       {state.stage === "complete" ? (
         <LessonSummary stars={state.stars} title={lesson.title} onContinue={() => router.push("/avatars-course")} />
       ) : (
-        <div className="flex-1 flex flex-col items-center px-6 pt-6 gap-6">
+        <div className="flex-1 flex flex-col items-center px-6 pt-6 gap-6 overflow-y-auto">
           <RiveCharacter
             config={riveConfig}
             isSpeaking={isSpeaking}
             isListening={isListening}
             emote={state.stage === "character-speaking" ? state.pendingEmote : null}
+            variant="hero"
           />
 
           <div

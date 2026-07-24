@@ -10,9 +10,17 @@ interface RiveCharacterProps {
   isListening: boolean;
   emote?: "correct" | "incorrect" | null;
   size?: number;
+  variant?: "circle" | "hero";
 }
 
-export function RiveCharacter({ config, isSpeaking, isListening, emote, size = 160 }: RiveCharacterProps) {
+export function RiveCharacter({
+  config,
+  isSpeaking,
+  isListening,
+  emote,
+  size = 160,
+  variant = "circle",
+}: RiveCharacterProps) {
   const [loadFailed, setLoadFailed] = useState(false);
 
   const { rive, RiveComponent } = useRive({
@@ -97,13 +105,17 @@ export function RiveCharacter({ config, isSpeaking, isListening, emote, size = 1
   }, [emote, correctInput, incorrectInput, config]);
 
   const showFallback = !config || loadFailed;
+  const isHero = variant === "hero";
+  const fallbackFontSize = isHero ? "min(30vh, 220px)" : `${size * 0.45}px`;
 
   return (
     <div
-      className="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+      className={`flex items-center justify-center overflow-hidden flex-shrink-0 ${
+        isHero ? "w-full rounded-3xl" : "rounded-full"
+      }`}
       style={{
-        width: size,
-        height: size,
+        width: isHero ? "100%" : size,
+        height: isHero ? "min(46vh, 420px)" : size,
         background: config
           ? "hsl(228 22% 13%)"
           : "linear-gradient(135deg, hsl(258 90% 66%), hsl(280 90% 60%))",
@@ -111,10 +123,12 @@ export function RiveCharacter({ config, isSpeaking, isListening, emote, size = 1
     >
       {showFallback ? (
         <div
-          className={`w-full h-full rounded-full flex items-center justify-center ${isSpeaking ? "animate-pulse" : ""}`}
+          className={`w-full h-full flex items-center justify-center ${isHero ? "rounded-3xl" : "rounded-full"} ${
+            isSpeaking ? "animate-pulse" : ""
+          }`}
           style={{ background: config?.fallbackColor ?? "hsl(258 90% 66%)" }}
         >
-          <span style={{ fontSize: size * 0.45 }}>{config?.fallbackEmoji ?? "🙂"}</span>
+          <span style={{ fontSize: fallbackFontSize }}>{config?.fallbackEmoji ?? "🙂"}</span>
         </div>
       ) : (
         <RiveComponent style={{ width: "100%", height: "100%" }} />
