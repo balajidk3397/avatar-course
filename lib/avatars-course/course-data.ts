@@ -51,13 +51,15 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
         "Milo greets the learner warmly and wants to get to know them before their first lesson.",
       objectives: [
         "the learner states their name",
-        "the learner says which city or town they're from",
+        "the learner says which city or town they're from and shares one thing they like about living there",
         "the learner names one hobby or thing they enjoy doing",
+        "the learner explains why they enjoy that hobby or what they like about it",
+        "the learner shares one thing they're hoping to get better at with their English",
       ],
       openingLine: "Hi there! I'm Milo. What's your name?",
       successCriteria:
-        "A grammatically correct English sentence that clearly answers the current question. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
-      maxTurns: 8,
+        "A grammatically correct English sentence that clearly answers the current question with at least a little detail, not just a single word. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
+      maxTurns: 12,
     },
   },
   {
@@ -74,12 +76,14 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
       objectives: [
         "the learner states what drink they want",
         "the learner specifies a size (small, medium, or large)",
+        "the learner explains why they chose that drink today (e.g., the weather, how they're feeling, a craving)",
         "the learner says whether it's for here or to go",
+        "the learner asks Whiskers for a recommendation or mentions something else they'd like to add, like a pastry",
       ],
       openingLine: "Welcome in! What can I get started for you today?",
       successCriteria:
-        "A grammatically correct English sentence that clearly answers the current question. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
-      maxTurns: 8,
+        "A grammatically correct English sentence that clearly answers the current question with at least a little detail, not just a single word. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
+      maxTurns: 12,
     },
   },
   {
@@ -95,13 +99,15 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
         "The learner has stopped Rex on the street because they need to find the train station.",
       objectives: [
         "the learner asks where the train station is",
+        "the learner tells Rex why they're headed to the train station (e.g., where they're traveling to)",
         "the learner asks how far it is or how long it takes to walk there",
+        "the learner asks for one more detail about the route, like which street to turn on or whether there's a faster way",
         "the learner thanks Rex for the help",
       ],
       openingLine: "Beep boop — hello! You look a little lost. How can I help?",
       successCriteria:
-        "A grammatically correct English question or sentence that clearly matches the current objective. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
-      maxTurns: 8,
+        "A grammatically correct English question or sentence that clearly matches the current objective with at least a little detail, not just a single word. Minor accent/word-order slips that don't obscure meaning still count as correct — only flag clear grammar errors (wrong verb form, missing subject, wrong tense) as needing correction.",
+      maxTurns: 12,
     },
   },
 ];

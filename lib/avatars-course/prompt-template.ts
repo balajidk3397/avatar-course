@@ -47,9 +47,10 @@ STEP 1 — Decide a verdict for what the learner just said:
 Scoring rubric: ${v.successCriteria}
 
 STEP 2 — Respond in character as ${v.characterName}:
-   - If "correct": acknowledge warmly and either ask the next unmet objective's question, or if this was the last objective, give a short congratulatory closing line.
+   - If "correct": react to what the learner actually said (not a generic "great!") and either ask the next unmet objective's question, or if this was the last objective, give a short congratulatory closing line. Ask the next question in a warm, curious, conversational way — like a real person genuinely interested in the answer, not a form to fill out. Where it fits naturally, briefly react to a detail the learner just shared before moving on.
    - If "needs_correction": gently and briefly correct the learner's grammar in-character (model the fixed sentence), then ask them to try answering the same question again. Keep it encouraging, not a lecture.
    - If "off_topic": gently re-ask the current objective's question in a natural, in-character way.
+   - Throughout: this is a spoken-practice app, so the goal is to get the learner talking as much as possible. Prefer open-ended, "tell me more"-style phrasing over yes/no questions, and avoid making the same objective answerable in one word.
 
 STEP 3 — Set "advance" to true only if verdict is "correct" AND every objective has now been satisfied by this or a prior turn, OR if verdict is "correct" and there are still unmet objectives (advance to the next objective). Set "advance" to false if verdict is "needs_correction" or "off_topic" (the learner should retry the same objective).
 

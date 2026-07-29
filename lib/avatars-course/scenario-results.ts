@@ -1,6 +1,12 @@
 import type { BridgeContext } from "@/lib/bridge";
 
-const SUPERNOVA_BASE_URL = "https://app.gosupernova.live";
+// Same-origin proxies (app/api/avatars-course/scenario-results/**) forward to
+// Supernova's /api/speak/scenarios/* server-side. Calling the upstream directly
+// from the browser risks a silent cross-origin failure: the webview loads this
+// app from a *.gosupernova.live subdomain, which is a different origin from
+// app.gosupernova.live, and CORS support on that endpoint isn't confirmed (see
+// the CORS note in docs/api-web-prototypes.md).
+const RESULTS_PROXY_URL = "/api/avatars-course/scenario-results";
 
 type Auth = BridgeContext["auth"];
 
@@ -28,7 +34,7 @@ export async function fetchScenarioResults(
 ): Promise<Record<string, ScenarioResult>> {
   if (!scenarioIds.length) return {};
   try {
-    const res = await fetch(`${SUPERNOVA_BASE_URL}/api/speak/scenarios/results`, {
+    const res = await fetch(RESULTS_PROXY_URL, {
       method: "POST",
       headers: authHeaders(auth),
       body: JSON.stringify({ scenario_ids: scenarioIds }),
@@ -71,7 +77,7 @@ export async function submitScenarioResult(
   auth: Auth
 ): Promise<{ ok: true; activityEndRedirectTo: string | null } | { ok: false }> {
   try {
-    const res = await fetch(`${SUPERNOVA_BASE_URL}/api/speak/scenarios/${scenarioId}/result`, {
+    const res = await fetch(`${RESULTS_PROXY_URL}/${encodeURIComponent(scenarioId)}`, {
       method: "POST",
       headers: authHeaders(auth),
       body: JSON.stringify({
