@@ -43,7 +43,7 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
     title: "Introduce Yourself",
     description: "Meet Milo and tell him a bit about you.",
     status: "published",
-    characterId: "notion-mascot",
+    characterId: "nova",
     variables: {
       characterName: "Milo",
       characterRole: "a friendly, upbeat welcome-desk assistant meeting the learner for the first time",
@@ -67,7 +67,7 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
     title: "Order a Coffee",
     description: "Order your drink from Whiskers at the cafe counter.",
     status: "published",
-    characterId: "cat-mascot",
+    characterId: "nova",
     variables: {
       characterName: "Whiskers",
       characterRole: "a cheerful barista taking an order at a busy cafe counter",
@@ -91,7 +91,7 @@ const AUTHORED: Omit<Lesson, "scenarioId" | "order">[] = [
     title: "Ask for Directions",
     description: "Ask Rex the way to the train station.",
     status: "published",
-    characterId: "retrobot-mascot",
+    characterId: "nova",
     variables: {
       characterName: "Rex",
       characterRole: "a helpful robot guide stationed at a city plaza information point",
@@ -149,7 +149,7 @@ const STUBS: Omit<Lesson, "scenarioId" | "order">[] = STUB_TITLES.map((title, i)
   title: `Lesson ${i + 4} — ${title}`,
   description: "Coming soon.",
   status: "stub",
-  characterId: "notion-mascot",
+  characterId: "nova",
   variables: null,
 }));
 

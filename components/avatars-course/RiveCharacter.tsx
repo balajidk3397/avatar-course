@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Fit, Layout, useRive, useStateMachineInput } from "@rive-app/react-canvas";
 import type { RiveCharacterConfig } from "@/lib/avatars-course/rive-config";
+import { VisemeCharacter } from "./VisemeCharacter";
 
 interface RiveCharacterProps {
   config: RiveCharacterConfig | undefined;
@@ -11,9 +12,27 @@ interface RiveCharacterProps {
   emote?: "correct" | "incorrect" | null;
   size?: number;
   variant?: "circle" | "hero";
+  /** Lip-sync characters only: the playing TTS audio and the line being spoken. */
+  audio?: HTMLAudioElement | null;
+  text?: string;
 }
 
-export function RiveCharacter({
+export function RiveCharacter(props: RiveCharacterProps) {
+  if (props.config?.kind === "viseme") {
+    return (
+      <VisemeCharacter
+        config={props.config}
+        audio={props.audio ?? null}
+        text={props.text ?? ""}
+        size={props.size}
+        variant={props.variant}
+      />
+    );
+  }
+  return <StateMachineCharacter {...props} />;
+}
+
+function StateMachineCharacter({
   config,
   isSpeaking,
   isListening,

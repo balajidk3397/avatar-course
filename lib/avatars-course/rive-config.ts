@@ -1,6 +1,12 @@
 export interface RiveCharacterConfig {
   src: string;
   artboard?: string;
+  /**
+   * "state-machine" (default): driven by boolean/trigger inputs.
+   * "viseme": a lip-sync character (e.g. Nova) with one timeline animation per
+   * mouth shape — see components/avatars-course/VisemeCharacter.tsx.
+   */
+  kind?: "state-machine" | "viseme";
   stateMachine: string;
   inputs: {
     speaking?: string;
@@ -28,6 +34,16 @@ const GUESSED_INPUTS = {
 };
 
 export const RIVE_CHARACTERS: Record<string, RiveCharacterConfig> = {
+  // Nova — lip-sync character from nova-viseme-words.vercel.app. No state machine:
+  // plays "Idle neutral" looped, and one animation per viseme (see lib/avatars-course/visemes.ts).
+  nova: {
+    src: "/rive-avatars/nova.riv",
+    kind: "viseme",
+    stateMachine: "",
+    inputs: {},
+    fallbackEmoji: "🌟",
+    fallbackColor: "hsl(258 90% 66%)",
+  },
   "notion-mascot": {
     src: "/rive-avatars/mascot-notionpeople_gesture.riv",
     artboard: CONFIRMED_ARTBOARD,

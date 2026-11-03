@@ -25,6 +25,38 @@ export interface ScenarioResult {
   attemptId: string | null;
 }
 
+// ─── Local-dev progress fallback ─────────────────────────────────────────────
+// In a bare browser at localhost there is no Supernova login, so the backend
+// answers 401 and the course map would never unlock lesson 2. When (and only when)
+// running a non-production build with no auth token, progress is kept in
+// localStorage instead. Production builds and the real app (which always has a
+// token from the bridge) never take this path.
+const DEV_RESULTS_KEY = "avatars-course:dev-results:v1";
+
+function shouldUseLocalDevProgress(auth: Auth): boolean {
+  return process.env.NODE_ENV !== "production" && !auth?.token;
+}
+
+function readDevResults(): Record<string, ScenarioResult> {
+  try {
+    return JSON.parse(localStorage.getItem(DEV_RESULTS_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeDevResult(scenarioId: string, result: ScenarioResult) {
+  try {
+    const all = readDevResults();
+    const prev = all[scenarioId];
+    // Keep the best star count, like replaying a lesson shouldn't lower it.
+    all[scenarioId] = prev && prev.stars > result.stars ? { ...result, stars: prev.stars } : result;
+    localStorage.setItem(DEV_RESULTS_KEY, JSON.stringify(all));
+  } catch {
+    // storage unavailable — progress just won't persist locally
+  }
+}
+
 // Fetches the latest result per scenario id — used to derive locked/unlocked/stars
 // state for the course map. Returns an empty map on any failure (fail open to "no
 // progress yet" rather than crash the course map).
@@ -33,6 +65,10 @@ export async function fetchScenarioResults(
   auth: Auth
 ): Promise<Record<string, ScenarioResult>> {
   if (!scenarioIds.length) return {};
+  if (shouldUseLocalDevProgress(auth)) {
+    const all = readDevResults();
+    return Object.fromEntries(scenarioIds.filter((id) => all[id]).map((id) => [id, all[id]]));
+  }
   try {
     const res = await fetch(RESULTS_PROXY_URL, {
       method: "POST",
@@ -76,6 +112,16 @@ export async function submitScenarioResult(
   input: SubmitScenarioResultInput,
   auth: Auth
 ): Promise<{ ok: true; activityEndRedirectTo: string | null } | { ok: false }> {
+  if (shouldUseLocalDevProgress(auth)) {
+    writeDevResult(scenarioId, {
+      id: crypto.randomUUID(),
+      data: input.data,
+      stars: input.stars,
+      insertedAt: new Date().toISOString(),
+      attemptId: input.attemptId ?? null,
+    });
+    return { ok: true, activityEndRedirectTo: null };
+  }
   try {
     const res = await fetch(`${RESULTS_PROXY_URL}/${encodeURIComponent(scenarioId)}`, {
       method: "POST",

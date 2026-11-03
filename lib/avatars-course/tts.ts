@@ -45,7 +45,10 @@ async function fetchBlobUrl(text: string, voiceId?: string): Promise<string> {
 export async function speakAs(
   text: string,
   voiceId?: string,
-  onSpeakingChange?: (speaking: boolean) => void
+  onSpeakingChange?: (speaking: boolean) => void,
+  // Called with the live <audio> element when playback starts, so lip-sync
+  // characters can read currentTime/duration. Called with null when it ends.
+  onAudio?: (audio: HTMLAudioElement | null) => void
 ): Promise<void> {
   if (typeof window === "undefined") return;
 
@@ -77,15 +80,18 @@ export async function speakAs(
     // this is what keeps the character's mouth animation in sync with audible speech.
     audio.onplaying = () => {
       onSpeakingChange?.(true);
+      onAudio?.(audio);
     };
     audio.onended = () => {
       onSpeakingChange?.(false);
+      onAudio?.(null);
       currentPlayPromise = null;
       resolve();
     };
     audio.onerror = (e) => {
       console.error("[avatars-course/tts] playback error", e);
       onSpeakingChange?.(false);
+      onAudio?.(null);
       currentPlayPromise = null;
       resolve();
     };

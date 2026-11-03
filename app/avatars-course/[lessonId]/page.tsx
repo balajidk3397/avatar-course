@@ -182,6 +182,7 @@ export default function AvatarsCourseLessonPage() {
   const recorderRef = useRef<Recorder | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
   const submittedRef = useRef(false);
 
   const cleanupRecorder = useCallback(() => {
@@ -210,7 +211,7 @@ export default function AvatarsCourseLessonPage() {
   useEffect(() => {
     if (state.stage !== "character-speaking" || !state.currentLine) return;
     let cancelled = false;
-    speakAs(state.currentLine, riveConfig?.voiceId, setAudioPlaying).then(() => {
+    speakAs(state.currentLine, riveConfig?.voiceId, setAudioPlaying, setAudioEl).then(() => {
       if (!cancelled) dispatch({ type: "STAGE", stage: "listening" });
     });
     return () => {
@@ -363,13 +364,15 @@ export default function AvatarsCourseLessonPage() {
             isListening={isListening}
             emote={state.stage === "character-speaking" ? state.pendingEmote : null}
             variant="hero"
+            audio={audioEl}
+            text={state.currentLine}
           />
 
           <div
             className="w-full rounded-3xl p-5 min-h-[88px] flex items-center justify-center"
             style={{ background: "hsl(228 22% 13%)", border: "1px solid hsl(228 20% 22%)" }}
           >
-            <p className="text-white text-lg font-medium text-center leading-snug">
+            <p className="text-white text-[15px] font-normal text-center leading-relaxed">
               {state.stage === "transcribing"
                 ? "Listening…"
                 : state.stage === "evaluating"
