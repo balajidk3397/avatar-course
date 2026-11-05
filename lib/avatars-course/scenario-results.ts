@@ -28,13 +28,13 @@ export interface ScenarioResult {
 // ─── Local-dev progress fallback ─────────────────────────────────────────────
 // In a bare browser at localhost there is no Supernova login, so the backend
 // answers 401 and the course map would never unlock lesson 2. When (and only when)
-// running a non-production build with no auth token, progress is kept in
-// localStorage instead. Production builds and the real app (which always has a
-// token from the bridge) never take this path.
+// there is no auth token — in any environment, including standalone Vercel
+// deploys — progress is kept in localStorage instead. The real app always has a
+// token from the bridge, so it never takes this path.
 const DEV_RESULTS_KEY = "avatars-course:dev-results:v1";
 
 function shouldUseLocalDevProgress(auth: Auth): boolean {
-  return process.env.NODE_ENV !== "production" && !auth?.token;
+  return !auth?.token;
 }
 
 function readDevResults(): Record<string, ScenarioResult> {
